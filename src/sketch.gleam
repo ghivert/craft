@@ -4,7 +4,6 @@
 ////   - [`class`](#class)
 ////   - [`dynamic`](#dynamic)
 ////   - [`to_class_name`](#to_class_name)
-////   - [`lustre_setup`](#lustre_setup)
 ////   - [`to_lustre`](#to_lustre)
 ////
 //// - Lifeycle functions
@@ -296,13 +295,13 @@ pub opaque type Class
 /// It's not possible to put a media query in a media query, and a pseudo-selector
 /// in a pseudo-selector.
 pub opaque type Style(media, pseudo) {
+  Property(key: String, value: String, important: Bool)
   ClassName(class_name: String)
   Media(query: String, styles: List(Style(NoMedia, PseudoSelector)))
   PseudoSelector(
     pseudo_selector: String,
     styles: List(Style(NoMedia, NoPseudoSelector)),
   )
-  Property(key: String, value: String, important: Bool)
 }
 
 // Phantom types
@@ -331,18 +330,22 @@ type PseudoStyle =
 // Used exclusively in the package.
 // Most should not be exposed, or in a low-level way.
 
+@external(erlang, "./sketch.ffi.erl", "compile_class/1")
 @external(javascript, "./sketch.ffi.mjs", "compileClass")
 fn compile_class(styles: List(Style(media, pseudo))) -> Class
 
+@external(erlang, "./sketch.ffi.erl", "compile_class/2")
 @external(javascript, "./sketch.ffi.mjs", "compileClass")
 fn compile_style(styles: List(Style(media, pseudo)), id: String) -> Class
 
+@external(erlang, "./sketch.ffi.erl", "memo")
 @external(javascript, "./sketch.ffi.mjs", "memo")
 fn memo(class: Class) -> Class
 
 /// Convert a `Class` to its proper class name, to use it anywhere in your
 /// application. It can have the form `class1` or `class1 class2` in case of
 /// classes composition.
+@external(erlang, "./sketch.ffi.erl", "to_string")
 @external(javascript, "./sketch.ffi.mjs", "toString")
 pub fn to_class_name(class: Class) -> String
 
@@ -354,6 +357,7 @@ pub fn to_class_name(class: Class) -> String
 /// you at the initialization of the Cache.
 /// If you're using Lustre, you shouldn't have to worry about it, and consider
 /// it as internal low-level.
+@external(erlang, "./cache.ffi.erl", "create_cache")
 @external(javascript, "./cache.ffi.mjs", "createCache")
 pub fn create_cache(options: Options) -> Result(Cache, error.SketchError)
 
@@ -367,6 +371,7 @@ pub fn create_cache(options: Options) -> Result(Cache, error.SketchError)
 /// Be careful, the styles computed by [`class`](#class) and [`dynamic`](#dynamic)
 /// will be pushed in the last cache called by `prepare`, due to the styles
 /// handling (and some side-effects under-the-hood for performance purposes).
+@external(erlang, "./cache.ffi.erl", "prepare_cache")
 @external(javascript, "./cache.ffi.mjs", "prepareCache")
 pub fn prepare(cache: Cache) -> Nil
 
@@ -374,6 +379,7 @@ pub fn prepare(cache: Cache) -> Nil
 /// `render` takes a Cache, and render its content to the stylesheet, according
 /// to the choice of the Cache. `render` is idempotent, and can be called as
 /// much as you want
+@external(erlang, "./cache.ffi.erl", "render_cache")
 @external(javascript, "./cache.ffi.mjs", "renderCache")
 pub fn render(cache: Cache) -> Nil
 
